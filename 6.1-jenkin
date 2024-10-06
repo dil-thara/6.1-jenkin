@@ -72,71 +72,19 @@ pipeline {
 
     post {
         success {
-            script {
-                echo 'Pipeline completed successfully!'
-                emailext (
-                    subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: """
-                        Hi,
-
-                        The build for ${env.JOB_NAME} #${env.BUILD_NUMBER} completed successfully.
-
-                        Details:
-                        - Job Name: ${env.JOB_NAME}
-                        - Build Number: ${env.BUILD_NUMBER}
-                        - Status: SUCCESS
-                        - Build URL: ${env.BUILD_URL}
-
-                        Regards,
-                        Jenkins CI
-                    """,
-                    to: "${EMAIL_RECIPIENT}"
-                )
-            }
+            echo 'Pipeline completed successfully!'
         }
 
         failure {
-            script {
-                echo 'Pipeline failed!'
-                emailext (
-                    subject: "Build FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: """
-                        Hi,
-
-                        Unfortunately, the build for ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.
-
-                        Please check the logs and take necessary action.
-
-                        Details:
-                        - Job Name: ${env.JOB_NAME}
-                        - Build Number: ${env.BUILD_NUMBER}
-                        - Status: FAILURE
-                        - Build URL: ${env.BUILD_URL}
-
-                        Regards,
-                        Jenkins CI
-                    """,
-                    attachLog: true,
-                    to: "${EMAIL_RECIPIENT}"
-                )
-            }
+            echo 'Pipeline failed!'
         }
 
         always {
             script {
-                echo 'Sending notification email...'
                 emailext (
                     subject: "Build ${currentBuild.fullDisplayName}: ${currentBuild.currentResult}",
-                    body: """
-                        Hi,
-
-                        The build for ${currentBuild.fullDisplayName} has completed with status: ${currentBuild.currentResult}.
-
-                        You can check the logs or build details at the following URL: ${env.BUILD_URL}
-
-                        Regards,
-                        Jenkins CI
-                    """,
+                    body: "Build ${currentBuild.fullDisplayName} finished with status ${currentBuild.currentResult}. Logs attached.",
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                     attachLog: true,
                     to: "${EMAIL_RECIPIENT}"
                 )
