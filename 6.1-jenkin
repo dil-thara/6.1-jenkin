@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    
     environment {
         EMAIL_RECIPIENT = 'diltharanethmini@gmail.com'
     }
@@ -14,7 +14,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Unit and Integration Tests') {
             steps {
                 script {
@@ -23,7 +23,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Code Analysis') {
             steps {
                 script {
@@ -32,7 +32,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Security Scan') {
             steps {
                 script {
@@ -41,7 +41,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Deploy to Staging') {
             steps {
                 script {
@@ -50,7 +50,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Integration Tests on Staging') {
             steps {
                 script {
@@ -59,7 +59,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Deploy to Production') {
             steps {
                 script {
@@ -76,7 +76,14 @@ pipeline {
             script {
                 emailext (
                     subject: "Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: "Good news! The build ${env.JOB_NAME} #${env.BUILD_NUMBER} has completed successfully.",
+                    body: """
+                        Hi,
+
+                        The build for ${env.JOB_NAME} #${env.BUILD_NUMBER} completed successfully.
+
+                        Regards,
+                        Jenkins
+                    """,
                     to: "${EMAIL_RECIPIENT}"
                 )
             }
@@ -87,8 +94,14 @@ pipeline {
             script {
                 emailext (
                     subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} has failed. Please check the logs.",
-                    recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                    body: """
+                        Hi,
+
+                        Unfortunately, the build for ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.
+
+                        Regards,
+                        Jenkins
+                    """,
                     attachLog: true,
                     to: "${EMAIL_RECIPIENT}"
                 )
@@ -100,14 +113,18 @@ pipeline {
             script {
                 emailext (
                     subject: "Build ${currentBuild.fullDisplayName}: ${currentBuild.currentResult}",
-                    body: """Build Details:
-                            - Job Name: ${env.JOB_NAME}
-                            - Build Number: ${env.BUILD_NUMBER}
-                            - Status: ${currentBuild.currentResult}
-                            - Duration: ${currentBuild.durationString}
-                            """,
-                    to: "${EMAIL_RECIPIENT}",
-                    attachLog: true
+                    body: """
+                        Hi,
+
+                        The build for ${currentBuild.fullDisplayName} has completed with status: ${currentBuild.currentResult}.
+
+                        You can check the logs or build details at the following URL: ${env.BUILD_URL}
+
+                        Regards,
+                        Jenkins
+                    """,
+                    attachLog: true,
+                    to: "${EMAIL_RECIPIENT}"
                 )
             }
         }
